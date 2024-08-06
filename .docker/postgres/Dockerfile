@@ -1,4 +1,7 @@
-FROM postgres:14-alpine
+FROM postgres:14.1-alpine
 
-RUN usermod -u 1000 postgres
+
+ENV POSTGRES_PASSWORD=postgres
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_DB=prisma
 

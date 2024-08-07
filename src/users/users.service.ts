@@ -4,6 +4,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersRepository } from './repository/users-repository';
 import { UnautorizedError } from 'src/common/errors/types/Unautorized-error';
+import { NotFoundError } from 'src/common/errors/types/NotFoundError';
 
 @Injectable()
 export class UsersService {
@@ -15,12 +16,19 @@ export class UsersService {
   }
 
   findAll() {
-    throw new UnautorizedError('Not authorized');
+    //throw new UnautorizedError('Not authorized');
+
     return this.userRepository.findAll();
   }
 
-  findOne(id: number) {
-    return this.userRepository.findOne(id);
+  async findOne(id: number) {
+    const user = await this.userRepository.findOne(id);
+
+    if(!user) {
+        throw new NotFoundError('User not found');
+    }
+
+    return user;
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

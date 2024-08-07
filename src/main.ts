@@ -7,9 +7,19 @@ import { UnauthorizedInterceptor } from './common/errors/interceptors/Unautorize
 import { NotFoundInterceptor } from './common/errors/interceptors/NotfoundInterceptor';
 import { ConflictInterceptor } from './common/errors/interceptors/ConflictInterceptor';
 import { DatabaseInterceptor } from './common/errors/interceptors/DatabaseInterceptor';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  const config = new DocumentBuilder()
+  .setTitle('Simple blog')
+  .setDescription('The simple blog API description')
+  .setVersion('1.0')
+  .build();
+const document = SwaggerModule.createDocument(app, config);
+SwaggerModule.setup('api', app, document);
+
   app.useGlobalPipes(new ValidationPipe({
     transform: true,
     whitelist: true,

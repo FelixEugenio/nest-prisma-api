@@ -5,7 +5,6 @@ import { CreatePostDto } from "../dto/create-post.dto";
 import { UpdatePostDto } from "../dto/update-post.dto";
 import { Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
-import { UnautorizedError } from "src/common/errors/types/Unautorized-error";
 import { NotFoundError } from "src/common/errors/types/NotFoundError";
 
 @Injectable()
@@ -73,11 +72,48 @@ export class PostRepository {
       }
 
     async  update(id: number, updatePostDto: UpdatePostDto): Promise<PostEntity> {
-        return this.prismaService.post.update({
+        const { authorEmail } = updatePostDto;
+
+        if(authorEmail) {
+            return this.prismaService.post.update({
+                data: updatePostDto,
+                where: {
+                    id
+                }
+            })
+        }
+
+        delete updatePostDto.authorEmail;
+
+        const user = await this.prismaService.user.findUnique({
           where: {
-            id,
+            email: authorEmail
           },
-          data: updatePostDto
+        })
+
+        if(!user) {
+            throw new NotFoundError('Author Not Found');
+        }
+
+        const data: Prisma.PostUpdateInput = {
+          ...updatePostDto,
+          author: {
+            connect: {
+              email: authorEmail
+            }
+          }
+        }
+
+        return this.prismaService.post.update({
+          where: {id},
+          data,
+          include:{
+            author: {
+              select: {
+                name: true,
+              }
+            }
+          }
         });
       }
 
